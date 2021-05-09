@@ -124,7 +124,7 @@ module Data.OFX
 import Control.Applicative (many, optional, (<|>))
 import Control.Monad (replicateM, (<=<))
 import Data.Data (Data)
-import Data.Maybe (listToMaybe)
+import Data.Maybe (fromMaybe, listToMaybe)
 import Data.Monoid ((<>))
 import qualified Data.Monoid as M
 import qualified Data.Time as T
@@ -336,16 +336,10 @@ time =
     h <- fmap read $ replicateM 2 digit
     m <- fmap read $ replicateM 2 digit
     s <- fmap read $ replicateM 2 digit
-    (milli, tz) <- do
-      mayDot <- optional (char '.')
-      case mayDot of
-        Nothing -> return (0, T.utc)
-        Just _ -> do
-          mil <- fmap ((/ 1000) . read) $ replicateM 3 digit
-          mayTz <- optional tzOffset
-          case mayTz of
-            Nothing -> return (mil, T.utc)
-            Just t -> return (mil, t)
+    milli <- maybe 0 ((/ 1000) . read) <$>
+      optional (char '.' *> replicateM 3 digit)
+    tz <- fromMaybe T.utc <$>
+      optional tzOffset
     let sec = s + milli
     return (T.TimeOfDay h m sec, tz)
   <?> "time"
