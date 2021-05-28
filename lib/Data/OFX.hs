@@ -91,6 +91,7 @@ module Data.OFX
   , loadTransactions
   , prettyRenderOfxFile
   , prettyRenderTransactions
+  , parseDate
 
   -- * Parsec parsers
   , ofxFile
